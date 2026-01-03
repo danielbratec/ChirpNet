@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application
+    x:Class="ChirpNet.Maui.App"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="PrimaryColor">#1D9BF0</Color>
+            <Color x:Key="PrimaryTextColor">White</Color>
+            <Color x:Key="BackgroundColor">#000000</Color>
+            <Color x:Key="TextColor">#E7E9EA</Color>
+
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource TextColor}" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryColor}" />
+                <Setter Property="TextColor" Value="{StaticResource PrimaryTextColor}" />
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="Padding" Value="16,10" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

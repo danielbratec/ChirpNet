@@ -1,0 +1,18 @@
+{
+  "short_name": "ChirpNet",
+  "name": "ChirpNet Social Network",
+  "icons": [
+    {
+      "src": "https://assets.grok.com/users/5472dee0-0b35-4011-9680-d0d062159995/generated/98d6c30c-fd5b-4a7b-816b-ffcd90f46b7d/image.jpg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://assets.grok.com/users/5472dee0-0b35-4011-9680-d0d062159995/generated/98d6c30c-fd5b-4a7b-816b-ffcd90f46b7d/image.jpg",
+      "sizes": "512x512"
+       }
+    },
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "theme_color": "#1d9bf0"
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ChirpNet.Maui.Views.TimelinePage"
+             Title="Timeline"
+             BackgroundColor="{StaticResource BackgroundColor}">
+
+    <RefreshView IsRefreshing="{Binding IsBusy}"
+                 Command="{Binding LoadPostsCommand}">
+
+        <VerticalStackLayout Spacing="15" Padding="15">
+
+            <Editor Placeholder="O que está acontecendo?"
+                    Text="{Binding NewPostContent}"
+                    HeightRequest="100"
+                    MaxLength="280"
+                    AutoSize="TextChanges" />
+
+            <Button Text="Chirpar"
+                    Command="{Binding SendPostCommand}"
+                    HorizontalOptions="End" />
+
+            <CollectionView ItemsSource="{Binding Posts}"
+                            EmptyView="Nenhum chirp ainda...">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="15"
+                               Margin="0,5"
+                               CornerRadius="12"
+                               BackgroundColor="#16181C"
+                               HasShadow="True">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="{Binding Author.Username}"
+                                       FontAttributes="Bold"
+                                       FontSize="Medium"
+                                       TextColor="{StaticResource PrimaryColor}" />
+
+                                <Label Text="{Binding Content}"
+                                       LineBreakMode="WordWrap" />
+
+                                <Label Text="{Binding CreatedAt, StringFormat='Há {0:dd/MM/yyyy HH:mm}'}"
+                                       FontSize="Caption"
+                                       TextColor="Gray"
+                                       HorizontalOptions="End" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+
+    </RefreshView>
+
+</ContentPage>

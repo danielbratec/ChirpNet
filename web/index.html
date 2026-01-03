@@ -7,8 +7,124 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d9bf0">
-    <h1>Bem vindo ao ChirpNet!<h1>
+    
+    
     <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('Service Worker registrado', reg))
+                    .catch(err => console.error('Falha ao registrar Service Worker', err));
+            });
+        }
+    </script>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Todo o conteúdo é renderizado dinamicamente via JavaScript -->
+        <div class="loading">Carregando ChirpNet...</div>
+    </div>
+
+    <script type="module">
+        
+        import { initAuth } from './js/auth.js';
+        import { initTimeline } from './js/timeline.js';
+        import { initProfile } from './js/profile.js';
+        import { connectWebSocket } from './js/websocket.js';
+        import { apiGet, apiPost } from './js/api.js';
+
+        
+        const store = {
+            token: localStorage.getItem('token'),
+            user: null,
+            posts: [],
+            currentPage: 'timeline',
+            theme: localStorage.getItem('theme') || 'dark'
+        };
+
+        const app = document.getElementById('app');
+
+        
+        function applyTheme() {
+            document.body.classList.toggle('dark', store.theme === 'dark');
+            localStorage.setItem('theme', store.theme);
+        }
+
+        function toggleTheme() {
+            store.theme = store.theme === 'light' ? 'dark' : 'light';
+            applyTheme();
+        }
+
+        
+        const routes = {
+            auth: () => initAuth(),
+            timeline: () => initTimeline(),
+            profile: () => initProfile()
+        };
+
+        function navigate(page) {
+            store.currentPage = page;
+            render();
+        }
+
+        
+        function renderNav() {
+            return `
+                <div id="nav">
+                    <button onclick="navigate('timeline')">Timeline</button>
+                    <button onclick="navigate('profile')">Perfil</button>
+                    <button id="theme-toggle" onclick="toggleTheme()">
+                        ${store.theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+                    </button>
+                </div>
+            `;
+        }
+
+        
+        async function render() {
+            app.innerHTML = '';
+
+            if (!store.token) {
+                routes.auth();
+                return;
+            }
+
+            
+            if (!store.user) {
+                try {
+                    
+                    store.user = { username: 'usuário' };
+                } catch (e) {
+                    localStorage.removeItem('token');
+                    store.token = null;
+                    navigate('auth');
+                    return;
+                }
+            }
+
+            app.innerHTML = renderNav();
+            routes[store.currentPage]();
+
+            
+            if (!window.stompClient) {
+                connectWebSocket();
+            }
+        }
+
+        
+        window.navigate = navigate;
+        window.toggleTheme = toggleTheme;
+
+        
+        applyTheme();
+        render();
+    </script>
+</body>
+</html>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js');

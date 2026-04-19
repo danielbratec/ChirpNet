@@ -4,139 +4,222 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChirpNet</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1d9bf0">
-    
-    
+    <style>
+        :root { --accent: #1d9bf0; }
+        body { margin:0; font-family: system-ui, sans-serif; background:#000; color:#e7e9ea; }
+        #app { max-width: 600px; margin: 0 auto; }
+
+        .header { 
+            position: sticky; top:0; background:#000; border-bottom:1px solid #2f3336; 
+            padding:15px; text-align:center; font-size:22px; font-weight:bold; z-index:100; 
+        }
+
+        .tabs {
+            display: flex;
+            background: #16181c;
+            position: sticky;
+            top: 53px;
+            z-index: 99;
+            border-bottom: 1px solid #2f3336;
+        }
+        .tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab.active {
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .post { 
+            background:#16181c; margin:12px 0; border-radius:12px; overflow:hidden; 
+            border:1px solid #2f3336; 
+        }
+        .post-header { padding:12px; display:flex; align-items:center; gap:10px; }
+        .post-header img { width:42px; height:42px; border-radius:50%; }
+        .post-content { padding:0 12px 12px; }
+        .video-container { position:relative; width:100%; background:#000; }
+        .video-container video { width:100%; max-height:520px; display:block; }
+        .viral-badge { 
+            position:absolute; top:12px; right:12px; background:#e0245e; color:white; 
+            font-size:12px; padding:4px 10px; border-radius:9999px; font-weight:bold; 
+        }
+
+        .actions { padding:10px 12px; display:flex; justify-content:space-around; border-top:1px solid #2f3336; color:#8899a6; }
+        
+        .composer { 
+            position:sticky; bottom:0; background:#16181c; border-top:1px solid #2f3336; 
+            padding:15px; z-index:99; 
+        }
+        textarea { width:100%; background:#0f1419; border:1px solid #2f3336; border-radius:12px; padding:12px; color:white; resize:none; min-height:70px; }
+        
+        .status { text-align:center; margin:8px; color:#1d9bf0; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">ChirpNet</div>
+
+        <!-- Abas -->
+        <div class="tabs">
+            <div class="tab active" onclick="changeTab(0)">Para Você</div>
+            <div class="tab" onclick="changeTab(1)">Em Alta</div>
+            <div class="tab" onclick="changeTab(2)">Recentes</div>
+        </div>
+
+        <!-- Feed -->
+        <div id="feed"></div>
+
+        <!-- Compositor -->
+        <div class="composer">
+            <textarea id="post-text" placeholder="O que está acontecendo?"></textarea>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button onclick="selectVideo()" style="background:#1d9bf0;">📹 Vídeo</button>
+                <button onclick="startLive()" style="background:#ff0033;">📡 Live</button>
+                <button onclick="postContent()" style="flex:1;">Chirpar</button>
+            </div>
+            <input type="file" id="video-input" accept="video/*" style="display:none;" onchange="uploadVideo(event)">
+            <div id="upload-status" class="status"></div>
+        </div>
+    </div>
+
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('Service Worker registrado', reg))
-                    .catch(err => console.error('Falha ao registrar Service Worker', err));
+        const API = "http://localhost:8080/api";
+        let token = localStorage.getItem("token") || "";
+        let currentTab = 0;
+        let allPosts = [
+            { id:1, username:"techgirl", text:"Testando nova funcionalidade de vídeo no ChirpNet!", videoUrl:"https://test-streams.mux.dev/x264_480p.mp4", isViral:true, views:12400, tab:"alta" },
+            { id:2, username:"memelord", text:"Quando o bug some do nada 😂", videoUrl:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180_10s_1MB.mp4", isViral:true, views:89000, tab:"alta" },
+            { id:3, username:"devdebian", text:"Mais um dia lindo usando Debian", videoUrl:null, views:320, tab:"recent" },
+            { id:4, username:"ia_lover", text:"IA gerando memes em tempo real", videoUrl:"https://test-streams.mux.dev/x264_480p.mp4", isViral:false, views:4500, tab:"para-voce" }
+        ];
+
+        function changeTab(tabIndex) {
+            currentTab = tabIndex;
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', i === tabIndex);
             });
-        }
-    </script>
-
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-</head>
-<body>
-    <div id="app">
-        <!-- Todo o conteúdo é renderizado dinamicamente via JavaScript -->
-        <div class="loading">Carregando ChirpNet...</div>
-    </div>
-
-    <script type="module">
-        
-        import { initAuth } from './js/auth.js';
-        import { initTimeline } from './js/timeline.js';
-        import { initProfile } from './js/profile.js';
-        import { connectWebSocket } from './js/websocket.js';
-        import { apiGet, apiPost } from './js/api.js';
-
-        
-        const store = {
-            token: localStorage.getItem('token'),
-            user: null,
-            posts: [],
-            currentPage: 'timeline',
-            theme: localStorage.getItem('theme') || 'dark'
-        };
-
-        const app = document.getElementById('app');
-
-        
-        function applyTheme() {
-            document.body.classList.toggle('dark', store.theme === 'dark');
-            localStorage.setItem('theme', store.theme);
+            loadFeed();
         }
 
-        function toggleTheme() {
-            store.theme = store.theme === 'light' ? 'dark' : 'light';
-            applyTheme();
+        function renderFeed(filteredPosts) {
+            const feed = document.getElementById("feed");
+            let html = "";
+
+            filteredPosts.forEach(p => {
+                html += `
+                    <div class="post">
+                        <div class="post-header">
+                            <img src="https://i.pravatar.cc/42?u=${p.username}" alt="">
+                            <div><strong>@${p.username}</strong></div>
+                        </div>
+                        <div class="post-content">
+                            <p>${p.text}</p>
+                            ${p.videoUrl ? `
+                                <div class="video-container">
+                                    ${p.isViral ? `<div class="viral-badge">🔥 VIRAL • ${p.views}K</div>` : ''}
+                                    <video controls loop playsinline>
+                                        <source src="${p.videoUrl}" type="video/mp4">
+                                    </video>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="actions">
+                            <button>❤️</button>
+                            <button>🔁</button>
+                            <button>💬</button>
+                            <button>📤</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            feed.innerHTML = html || "<p style='text-align:center; padding:40px; color:#666;'>Nenhum vídeo encontrado nesta aba.</p>";
         }
 
-        
-        const routes = {
-            auth: () => initAuth(),
-            timeline: () => initTimeline(),
-            profile: () => initProfile()
-        };
+        function loadFeed() {
+            let filtered = [];
 
-        function navigate(page) {
-            store.currentPage = page;
-            render();
-        }
-
-        
-        function renderNav() {
-            return `
-                <div id="nav">
-                    <button onclick="navigate('timeline')">Timeline</button>
-                    <button onclick="navigate('profile')">Perfil</button>
-                    <button id="theme-toggle" onclick="toggleTheme()">
-                        ${store.theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-                    </button>
-                </div>
-            `;
-        }
-
-        
-        async function render() {
-            app.innerHTML = '';
-
-            if (!store.token) {
-                routes.auth();
-                return;
+            if (currentTab === 0) { // Para Você
+                filtered = allPosts.filter(p => p.tab === "para-voce" || p.views > 3000);
+            } 
+            else if (currentTab === 1) { // Em Alta
+                filtered = allPosts.filter(p => p.isViral).sort((a,b) => b.views - a.views);
+            } 
+            else if (currentTab === 2) { // Recentes
+                filtered = allPosts.sort((a,b) => b.id - a.id);
             }
 
-            
-            if (!store.user) {
-                try {
-                    
-                    store.user = { username: 'usuário' };
-                } catch (e) {
-                    localStorage.removeItem('token');
-                    store.token = null;
-                    navigate('auth');
-                    return;
+            renderFeed(filtered);
+        }
+
+        function selectVideo() {
+            document.getElementById("video-input").click();
+        }
+
+        async function uploadVideo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById("upload-status");
+            status.textContent = "📤 Enviando vídeo...";
+
+            const formData = new FormData();
+            formData.append("content", document.getElementById("post-text").value || "📹 Vídeo novo");
+            formData.append("video", file);
+
+            try {
+                const res = await fetch(API + "/posts/video", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    status.style.color = "#00ff00";
+                    status.textContent = "✅ Vídeo postado com sucesso!";
+                    document.getElementById("post-text").value = "";
+                    loadFeed();
+                } else {
+                    status.style.color = "red";
+                    status.textContent = "❌ Falha ao enviar vídeo";
                 }
-            }
-
-            app.innerHTML = renderNav();
-            routes[store.currentPage]();
-
-            
-            if (!window.stompClient) {
-                connectWebSocket();
+            } catch (e) {
+                status.style.color = "red";
+                status.textContent = "Erro de conexão";
             }
         }
 
-        
-        window.navigate = navigate;
-        window.toggleTheme = toggleTheme;
+        async function postContent() {
+            const text = document.getElementById("post-text").value.trim();
+            if (!text) return alert("Escreva algo!");
 
-        
-        applyTheme();
-        render();
-    </script>
-</body>
-</html>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js');
-            });
+            try {
+                await fetch(API + "/posts", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ content: text })
+                });
+                document.getElementById("post-text").value = "";
+                loadFeed();
+            } catch (e) {
+                alert("Erro ao postar");
+            }
         }
+
+        function startLive() {
+            alert("📡 Iniciando transmissão ao vivo...\n\n(Em produção vamos usar LiveKit ou Mediasoup)");
+        }
+
+        window.onload = () => {
+            loadFeed();
+        };
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-</head>
-<body>
-    <div id="app">
-    </div>
-    <script type="module" src="js/main.js"></script>
 </body>
 </html>

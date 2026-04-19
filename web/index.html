@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,11 +8,46 @@
     <style>
         :root { --accent: #1d9bf0; }
         body { margin:0; font-family: system-ui, sans-serif; background:#000; color:#e7e9ea; }
-        #app { max-width: 600px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
 
-        .header { 
-            position: sticky; top:0; background:#000; border-bottom:1px solid #2f3336; 
-            padding:15px; text-align:center; font-size:22px; font-weight:bold; z-index:100; 
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .logo { font-size: 48px; font-weight: bold; color: var(--accent); margin-bottom: 30px; }
+
+        .btn {
+            width: 100%;
+            max-width: 380px;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 9999px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-google { background: #fff; color: #000; }
+        .btn-apple  { background: #000; color: #fff; border: 1px solid #666; }
+        .btn-create { background: var(--accent); color: white; }
+
+        /* Homepage */
+        .header {
+            position: sticky;
+            top: 0;
+            background: #000;
+            border-bottom: 1px solid #2f3336;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            z-index: 100;
         }
 
         .tabs {
@@ -24,53 +60,102 @@
         }
         .tab {
             flex: 1;
-            padding: 14px;
+            padding: 15px;
             text-align: center;
-            cursor: pointer;
             font-weight: bold;
+            cursor: pointer;
         }
         .tab.active {
             color: var(--accent);
             border-bottom: 3px solid var(--accent);
         }
 
-        .post { 
-            background:#16181c; margin:12px 0; border-radius:12px; overflow:hidden; 
-            border:1px solid #2f3336; 
+        .post {
+            background: #16181c;
+            margin: 12px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2f3336;
         }
-        .post-header { padding:12px; display:flex; align-items:center; gap:10px; }
-        .post-header img { width:42px; height:42px; border-radius:50%; }
-        .post-content { padding:0 12px 12px; }
-        .video-container { position:relative; width:100%; background:#000; }
-        .video-container video { width:100%; max-height:520px; display:block; }
-        .viral-badge { 
-            position:absolute; top:12px; right:12px; background:#e0245e; color:white; 
-            font-size:12px; padding:4px 10px; border-radius:9999px; font-weight:bold; 
+        .post-header {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .post-header img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+        }
+        .video-container video {
+            width: 100%;
+            max-height: 520px;
+            display: block;
+        }
+        .viral-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #e0245e;
+            color: white;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-weight: bold;
         }
 
-        .actions { padding:10px 12px; display:flex; justify-content:space-around; border-top:1px solid #2f3336; color:#8899a6; }
-        
-        .composer { 
-            position:sticky; bottom:0; background:#16181c; border-top:1px solid #2f3336; 
-            padding:15px; z-index:99; 
+        .composer {
+            position: sticky;
+            bottom: 0;
+            background: #16181c;
+            border-top: 1px solid #2f3336;
+            padding: 15px;
+            z-index: 99;
         }
-        textarea { width:100%; background:#0f1419; border:1px solid #2f3336; border-radius:12px; padding:12px; color:white; resize:none; min-height:70px; }
-        
-        .status { text-align:center; margin:8px; color:#1d9bf0; }
+        textarea {
+            width: 100%;
+            background: #0f1419;
+            border: 1px solid #2f3336;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            resize: none;
+            min-height: 80px;
+        }
     </style>
 </head>
 <body>
-    <div id="app">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="login-screen">
+        <div class="logo">ChirpNet</div>
+        <h2>Bem-vindo ao ChirpNet</h2>
+        <p style="color:#8899a6; margin: 10px 0 30px;">Junte-se à conversa</p>
+
+        <button class="btn btn-google" onclick="loginWithGoogle()">Entrar com Google</button>
+        <button class="btn btn-apple" onclick="loginWithApple()">Entrar com Apple</button>
+        
+        <div style="margin: 25px 0; color: #555;">ou</div>
+        
+        <button class="btn btn-create" onclick="createAccount()">Criar conta</button>
+
+        <p style="margin-top: 40px; color:#8899a6;">
+            Já tem uma conta? 
+            <span onclick="showManualLogin()" style="color:var(--accent); cursor:pointer;">Entrar com usuário e senha</span>
+        </p>
+    </div>
+
+    <!-- HOMEPAGE -->
+    <div id="homepage" style="display: none;">
         <div class="header">ChirpNet</div>
 
-        <!-- Abas -->
         <div class="tabs">
             <div class="tab active" onclick="changeTab(0)">Para Você</div>
             <div class="tab" onclick="changeTab(1)">Em Alta</div>
             <div class="tab" onclick="changeTab(2)">Recentes</div>
         </div>
 
-        <!-- Feed -->
         <div id="feed"></div>
 
         <!-- Compositor -->
@@ -82,123 +167,177 @@
                 <button onclick="postContent()" style="flex:1;">Chirpar</button>
             </div>
             <input type="file" id="video-input" accept="video/*" style="display:none;" onchange="uploadVideo(event)">
-            <div id="upload-status" class="status"></div>
         </div>
     </div>
 
     <script>
-        const API = "http://localhost:8080/api";
-        let token = localStorage.getItem("token") || "";
-        let currentTab = 0;
-        let allPosts = [
-            { id:1, username:"techgirl", text:"Testando nova funcionalidade de vídeo no ChirpNet!", videoUrl:"https://test-streams.mux.dev/x264_480p.mp4", isViral:true, views:12400, tab:"alta" },
-            { id:2, username:"memelord", text:"Quando o bug some do nada 😂", videoUrl:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny_320x180_10s_1MB.mp4", isViral:true, views:89000, tab:"alta" },
-            { id:3, username:"devdebian", text:"Mais um dia lindo usando Debian", videoUrl:null, views:320, tab:"recent" },
-            { id:4, username:"ia_lover", text:"IA gerando memes em tempo real", videoUrl:"https://test-streams.mux.dev/x264_480p.mp4", isViral:false, views:4500, tab:"para-voce" }
-        ];
+        const API_BASE = "http://localhost:8080/api";
+        let token = localStorage.getItem("token");
 
-        function changeTab(tabIndex) {
-            currentTab = tabIndex;
-            document.querySelectorAll('.tab').forEach((t, i) => {
-                t.classList.toggle('active', i === tabIndex);
-            });
+        // ==================== LOGIN ====================
+        function showManualLogin() {
+            const username = prompt("Usuário:");
+            const password = prompt("Senha:");
+            if (username && password) {
+                login(username, password);
+            }
+        }
+
+        async function login(username, password) {
+            try {
+                const res = await fetch(API_BASE + "/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    token = data.token;
+                    localStorage.setItem("token", token);
+                    showHomepage();
+                } else {
+                    alert("Usuário ou senha incorretos");
+                }
+            } catch (e) {
+                alert("Erro ao conectar com o servidor");
+            }
+        }
+
+        function loginWithGoogle() {
+            alert("Google Login será implementado no backend Spring Boot (OAuth2).\n\nPor enquanto use 'Entrar com usuário e senha'");
+        }
+
+        function loginWithApple() {
+            alert("Apple Login será implementado no futuro.");
+        }
+
+        function createAccount() {
+            const username = prompt("Escolha um nome de usuário (sem espaços):");
+            const password = prompt("Crie uma senha:");
+            if (username && password) {
+                register(username, password);
+            }
+        }
+
+        async function register(username, password) {
+            try {
+                const res = await fetch(API_BASE + "/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    alert("Conta criada com sucesso! Faça login.");
+                } else {
+                    alert("Erro ao criar conta. Usuário pode já existir.");
+                }
+            } catch (e) {
+                alert("Erro de conexão");
+            }
+        }
+
+        function showHomepage() {
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("homepage").style.display = "block";
             loadFeed();
         }
 
-        function renderFeed(filteredPosts) {
-            const feed = document.getElementById("feed");
+        // ==================== FEED REAL ====================
+        let currentTab = 0;
+
+        async function loadFeed() {
+            const feedEl = document.getElementById("feed");
+            feedEl.innerHTML = "<p style='text-align:center; padding:40px;'>Carregando posts reais...</p>";
+
+            try {
+                const res = await fetch(API_BASE + "/posts", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (res.ok) {
+                    const posts = await res.json();
+                    renderRealPosts(posts);
+                } else {
+                    feedEl.innerHTML = "<p style='text-align:center; padding:40px; color:#888;'>Faça login para ver os posts reais.</p>";
+                }
+            } catch (e) {
+                feedEl.innerHTML = "<p style='text-align:center; padding:40px; color:#888;'>Backend não está respondendo.<br>Verifique se o Spring Boot está rodando.</p>";
+            }
+        }
+
+        function renderRealPosts(posts) {
+            const feedEl = document.getElementById("feed");
             let html = "";
 
-            filteredPosts.forEach(p => {
-                html += `
-                    <div class="post">
-                        <div class="post-header">
-                            <img src="https://i.pravatar.cc/42?u=${p.username}" alt="">
-                            <div><strong>@${p.username}</strong></div>
+            if (posts.length === 0) {
+                html = "<p style='text-align:center; padding:40px;'>Nenhum post ainda. Seja o primeiro a postar!</p>";
+            } else {
+                posts.forEach(p => {
+                    html += `
+                        <div class="post">
+                            <div class="post-header">
+                                <img src="https://i.pravatar.cc/42?u=${p.author?.username || 'user'}" alt="">
+                                <div><strong>@${p.author?.username || 'usuário'}</strong></div>
+                            </div>
+                            <div class="post-content">
+                                <p>${p.content || ''}</p>
+                                ${p.videoUrl ? `
+                                    <div class="video-container" style="position:relative;">
+                                        <video controls loop playsinline>
+                                            <source src="${p.videoUrl}" type="video/mp4">
+                                        </video>
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
-                        <div class="post-content">
-                            <p>${p.text}</p>
-                            ${p.videoUrl ? `
-                                <div class="video-container">
-                                    ${p.isViral ? `<div class="viral-badge">🔥 VIRAL • ${p.views}K</div>` : ''}
-                                    <video controls loop playsinline>
-                                        <source src="${p.videoUrl}" type="video/mp4">
-                                    </video>
-                                </div>
-                            ` : ''}
-                        </div>
-                        <div class="actions">
-                            <button>❤️</button>
-                            <button>🔁</button>
-                            <button>💬</button>
-                            <button>📤</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            feed.innerHTML = html || "<p style='text-align:center; padding:40px; color:#666;'>Nenhum vídeo encontrado nesta aba.</p>";
-        }
-
-        function loadFeed() {
-            let filtered = [];
-
-            if (currentTab === 0) { // Para Você
-                filtered = allPosts.filter(p => p.tab === "para-voce" || p.views > 3000);
-            } 
-            else if (currentTab === 1) { // Em Alta
-                filtered = allPosts.filter(p => p.isViral).sort((a,b) => b.views - a.views);
-            } 
-            else if (currentTab === 2) { // Recentes
-                filtered = allPosts.sort((a,b) => b.id - a.id);
+                    `;
+                });
             }
-
-            renderFeed(filtered);
+            feedEl.innerHTML = html;
         }
 
+        // ==================== POSTAGEM ====================
         function selectVideo() {
             document.getElementById("video-input").click();
         }
 
-        async function uploadVideo(event) {
-            const file = event.target.files[0];
+        async function uploadVideo(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
-            const status = document.getElementById("upload-status");
-            status.textContent = "📤 Enviando vídeo...";
-
             const formData = new FormData();
-            formData.append("content", document.getElementById("post-text").value || "📹 Vídeo novo");
+            formData.append("content", document.getElementById("post-text").value || "📹 Vídeo");
             formData.append("video", file);
 
             try {
-                const res = await fetch(API + "/posts/video", {
+                const res = await fetch(API_BASE + "/posts/video", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${token}` },
                     body: formData
                 });
 
                 if (res.ok) {
-                    status.style.color = "#00ff00";
-                    status.textContent = "✅ Vídeo postado com sucesso!";
+                    alert("✅ Vídeo enviado com sucesso!");
                     document.getElementById("post-text").value = "";
                     loadFeed();
                 } else {
-                    status.style.color = "red";
-                    status.textContent = "❌ Falha ao enviar vídeo";
+                    alert("Erro ao enviar vídeo");
                 }
-            } catch (e) {
-                status.style.color = "red";
-                status.textContent = "Erro de conexão";
+            } catch (err) {
+                alert("Erro de conexão com o servidor");
             }
         }
 
         async function postContent() {
             const text = document.getElementById("post-text").value.trim();
-            if (!text) return alert("Escreva algo!");
+            if (!text) return alert("Escreva algo para chirpar!");
 
             try {
-                await fetch(API + "/posts", {
+                const res = await fetch(API_BASE + "/posts", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -206,19 +345,36 @@
                     },
                     body: JSON.stringify({ content: text })
                 });
-                document.getElementById("post-text").value = "";
-                loadFeed();
+
+                if (res.ok) {
+                    document.getElementById("post-text").value = "";
+                    loadFeed();
+                } else {
+                    alert("Erro ao postar");
+                }
             } catch (e) {
-                alert("Erro ao postar");
+                alert("Erro de conexão");
             }
         }
 
         function startLive() {
-            alert("📡 Iniciando transmissão ao vivo...\n\n(Em produção vamos usar LiveKit ou Mediasoup)");
+            alert("📡 Funcionalidade de Live será implementada em breve (WebRTC + LiveKit)");
         }
 
-        window.onload = () => {
+        // Mudar aba
+        function changeTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', i === tab);
+            });
             loadFeed();
+        }
+
+        // Inicialização
+        window.onload = () => {
+            if (token) {
+                showHomepage();
+            }
         };
     </script>
 </body>
